@@ -86,7 +86,7 @@ def export_excel():
             "是否收藏": "是" if c.is_favorite else "否",
             "联系方式": methods_str
         })
-    
+    # 使用 Pandas 创建 DataFrame
     df = pd.DataFrame(data)
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
