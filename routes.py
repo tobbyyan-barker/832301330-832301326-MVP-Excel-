@@ -31,6 +31,7 @@ def add_contact():
         
         # 如果同时填写了联系方式
         if m_type and m_value:
+            # 注意：这里用到了 contact_id 外键，关联到刚才创建的人
             new_method = ContactMethod(method_type=m_type, value=m_value, contact_id=new_contact.id)
             db.session.add(new_method)
             db.session.commit()
