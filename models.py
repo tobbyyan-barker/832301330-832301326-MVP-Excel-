@@ -1,4 +1,5 @@
 # models.py
+# Defines SQLAlchemy database models for the Contact Book application
 from extensions import db
 
 class Contact(db.Model):
