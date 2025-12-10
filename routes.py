@@ -23,8 +23,10 @@ def add_contact():
     m_value = request.form.get('value')
 
     if name:
+        # 第一步：创建联系人主体
         new_contact = Contact(name=name)
         db.session.add(new_contact)
+        # 必须先提交一次 commit，数据库才会为 new_contact 生成 id
         db.session.commit()
         
         # 如果同时填写了联系方式
