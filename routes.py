@@ -88,6 +88,7 @@ def export_excel():
         })
     # 使用 Pandas 创建 DataFrame
     df = pd.DataFrame(data)
+    # 使用 BytesIO 在内存中生成文件，而不是保存到硬盘（更高效）
     output = io.BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer:
         df.to_excel(writer, index=False)
