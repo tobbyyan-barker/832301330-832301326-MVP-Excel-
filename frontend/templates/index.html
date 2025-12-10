@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极限编程通讯录 (XP Address Book)</title>
+    <style>
+        /* --- 基础样式 --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+
+        /* --- 顶部控制面板 (添加 & 导入导出) --- */
+        .control-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+            justify-content: space-between;
+        }
+
+        .panel-section { flex: 1; min-width: 300px; }
+        .panel-section h3 { margin-top: 0; color: #555; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+
+        /* 表单元素样式 */
+        input[type="text"], select, input[type="file"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 5px;
+            margin-bottom: 10px;
+        }
+
+        button, .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: #3498db; color: white; } /* 蓝色 */
+        .btn-success { background-color: #2ecc71; color: white; } /* 绿色 */
+        .btn-danger { background-color: #e74c3c; color: white; }  /* 红色 */
+        .btn-warning { background-color: #f1c40f; color: #333; }  /* 黄色 */
+        
+        button:hover, .btn:hover { opacity: 0.9; }
+
+        /* --- 联系人卡片网格布局 --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+            border-top: 4px solid #ddd; /* 默认顶部颜色 */
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* 收藏状态样式 (高亮) */
+        .card.favorite {
+            border-top: 4px solid #f1c40f;
+            background-color: #fffdf5;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-header h2 { margin: 0; font-size: 1.2rem; }
+        
+        .actions { display: flex; gap: 5px; }
+
+        /* 联系方式列表 */
+        .methods-list {
+            background: #f8f9fa;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 0.9rem;
+        }
+
+        .method-item {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding: 5px 0;
+        }
+        
+        .method-item:last-child { border-bottom: none; }
+        .method-type { font-weight: bold; color: #666; margin-right: 5px; }
+        .delete-x { color: #e74c3c; text-decoration: none; font-weight: bold; cursor: pointer; }
+
+        /* 卡片内的小表单 */
+        .mini-form {
+            margin-top: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .mini-form input { flex: 1; padding: 5px; font-size: 0.8rem; }
+        .mini-form select { padding: 5px; font-size: 0.8rem; }
+        .btn-mini { padding: 5px 10px; font-size: 0.8rem; }
+
+    </style>
+</head>
+<body>
+
+    <h1>📚 极速通讯录 (Extreme Programming Demo)</h1>
+
+    <div class="control-panel">
+        
+        <div class="panel-section">
+            <h3>➕ 新建联系人</h3>
+            <form action="/add" method="post">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" name="name" placeholder="姓名 (必填)" required style="width: 120px;">
+                </div>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <span style="font-size: 0.9em; color: #666;">初始方式:</span>
+                    <select name="method_type">
+                        <option value="手机">📱 手机</option>
+                        <option value="微信">💬 微信</option>
+                        <option value="邮箱">📧 邮箱</option>
+                        <option value="地址">🏠 地址</option>
+                    </select>
+                    <input type="text" name="value" placeholder="号码/ID" style="flex:1;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 5px;">创建联系人</button>
+            </form>
+        </div>
+
+        <div class="panel-section" style="border-left: 1px solid #eee; padding-left: 30px;">
+            <h3>📂 数据管理</h3>
+            <div style="margin-bottom: 15px;">
+                <span style="font-size: 0.9em; color: #666;">备份数据：</span>
+                <a href="/export" class="btn btn-success">⬇️ 导出 Excel</a>
+            </div>
+            
+            <form action="/import" method="post" enctype="multipart/form-data" style="background: #fafafa; padding: 10px; border-radius: 5px;">
+                <span style="font-size: 0.9em; color: #666;">恢复数据：</span><br>
+                <input type="file" name="file" accept=".xlsx" required>
+                <button type="submit" class="btn btn-warning">⬆️ 导入</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        {% for contact in contacts %}
+        <div class="card {% if contact.is_favorite %}favorite{% endif %}">
+            
+            <div class="card-header">
+                <h2>{{ contact.name }}</h2>
+                <div class="actions">
+                    <a href="/toggle_favorite/{{ contact.id }}" class="btn btn-warning" style="padding: 5px 8px;" title="收藏/取消">
+                        {% if contact.is_favorite %}★{% else %}☆{% endif %}
+                    </a>
+                    <a href="/delete/{{ contact.id }}" class="btn btn-danger" style="padding: 5px 8px;" onclick="return confirm('确定要删除 {{ contact.name }} 吗？');" title="删除">
+                        🗑️
+                    </a>
+                </div>
+            </div>
+
+            <div class="methods-list">
+                {% if contact.methods %}
+                    {% for method in contact.methods %}
+                    <div class="method-item">
+                        <span>
+                            <span class="method-type">{{ method.method_type }}:</span>
+                            {{ method.value }}
+                        </span>
+                        <a href="/delete_method/{{ method.id }}" class="delete-x" title="删除此方式">×</a>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; color: #aaa; padding: 10px;">暂无联系方式</div>
+                {% endif %}
+            </div>
+
+            <form action="/add_method/{{ contact.id }}" method="post" class="mini-form">
+                <select name="method_type" style="width: 70px;">
+                    <option value="手机">手机</option>
+                    <option value="微信">微信</option>
+                    <option value="邮箱">邮箱</option>
+                </select>
+                <input type="text" name="value" placeholder="新号码" required>
+                <button type="submit" class="btn btn-primary btn-mini">+</button>
+            </form>
+
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>
